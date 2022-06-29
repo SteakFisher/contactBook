@@ -1,8 +1,11 @@
 from pprint import pprint
 import mysql.connector as sql
 
-db = sql.connect(username='root', password='00b', host='localhost', database='jay')
+db = sql.connect(username='root', password='00b', host='localhost', database = 'jay')
 cs = db.cursor()
+
+cs.execute("CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT, username varchar(30) NOT NULL, password varchar(30) NOT NULL, unique(username))")
+cs.execute("CREATE TABLE IF NOT EXISTS contactInfo(userId int NOT NULL, contactId int primary key NOT NULL AUTO_INCREMENT, contactName varchar(30), contactSurname varchar(30), contactLastName varchar(30), constraint userId foreign key(userId) references loginInfo(userid))")
 
 class User:
     def __init__(self, userId, username, password):
@@ -84,3 +87,4 @@ while (user is False):
     else:
         print("Invalid input")
 
+print(user.getContacts())
