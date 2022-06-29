@@ -4,21 +4,30 @@ import mysql.connector as sql
 db = sql.connect(username='root', password='00b', host='localhost', database='jay')
 cs = db.cursor()
 
-userId = 1
 class User:
     def __init__(self, userId, username, password):
         self.username = username
         self.password = password
         self.userId = userId
         # table, name = loginInfo with primary key = userId contains info such as user, pass and userId
-        # create table loginInfo(id int primary key, username varchar(30), password varchar(30), unique(username));
+        # create table logininfo(userId int primary key NOT NULL AUTO_INCREMENT, username varchar(30) NOT NULL, password varchar(30) NOT NULL, unique(username));
+
         # another table, name = contactInfo with foreign key = userId and primary key = contactId contains info such as userId, contactId, contactName, contactSurname, contactLastName
+        # create table contactInfo(userId int NOT NULL, contactId int primary key NOT NULL AUTO_INCREMENT, contactName varchar(30), contactSurname varchar(30),
+        # contactLastName varchar(30), constraint userId foreign key(userId) references loginInfo(userid));
+
         # another table, name = contactNumbers with Foreign Key = contactId and primary key = numId has more info such as contactNumber, contactType
         # another table, name = events with Foreign Key = contactId and primary key = eventId has more info such as eventName, eventDate, eventLocation
 
+
+
+    def getContacts(self):
+        cs.execute("SELECT * FROM contactInfo")
+        return cs.fetchall()
+
 def fetchUser(id):
     try:
-        cs.execute("SELECT * FROM loginInfo WHERE id = %s" %(id))
+        cs.execute("SELECT * FROM loginInfo WHERE userid = %s" %(id))
     except:
         return False
     else:
@@ -32,7 +41,7 @@ def login():
     username = input("Enter your username: ")
     password = input("Enter your password: ")
     try:
-        cs.execute("SELECT id FROM loginInfo WHERE username = '%s' AND password = '%s'" %(username, password))
+        cs.execute("SELECT userId FROM loginInfo WHERE username = '%s' AND password = '%s'" %(username, password))
     except:
         print("Login failed")
         return False
@@ -60,10 +69,8 @@ def signUp():
             return False
         else:
             password = input("Enter your password: ")
-            global userId
-            cs.execute("INSERT INTO loginInfo VALUES(%s, '%s', '%s')" % (userId, username, password))
+            cs.execute("INSERT INTO loginInfo(username, password) VALUES('%s', '%s')" % (username, password))
             db.commit()
-            userId += 1
             print("Sign up successful")
             return False
 
@@ -76,3 +83,4 @@ while (user is False):
         user = signUp()
     else:
         print("Invalid input")
+
