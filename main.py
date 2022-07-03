@@ -30,6 +30,11 @@ class User:
         # another table, name = events with Foreign Key = contactId and
         # primary key = eventId has more info such as eventName, eventDate, eventLocation
 
+    def deleteUser(self):
+        cs.execute("DELETE FROM logininfo WHERE userId = %s", (self.userId,))
+        db.commit()
+        print("User deleted")
+
 
 def login():
     username = input("Enter your username: ")
@@ -64,22 +69,38 @@ def signUp():
         return User(t[0][0], username, password, t[0][1])
 
 
-user = False
-while user is False:
-    print("""1) Login
-2) Sign up
-3) Exit
-(1/2/3)""")
-    a = input("")
-    if a == '1':
-        user = login()
-    elif a == '2':
-        user = signUp()
-    elif a == '3':
-        print("Goodbye")
-        break
-    else:
-        print("Invalid option, input 1,2 or 3!")
+def main():
+    user = False
+    while user is False:
+        print("""1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
+        loginChoice = input("")
+        if loginChoice == '1':
+            user = login()
+        elif loginChoice == '2':
+            user = signUp()
+        elif loginChoice == '3':
+            print("Goodbye")
+            return
+        else:
+            print("Invalid option, input 1,2 or 3!")
 
-pprint(vars(user))
-print("Welcome " + user.username + "!")
+    print("Welcome " + user.username + "!")
+
+    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Exit \n(1/2/3/4/5)""")
+    userChoice = input("")
+    if userChoice == '1':
+        print("Ticket booking")
+    elif userChoice == '2':
+        print("Ticket checking")
+    elif userChoice == '3':
+        print("Ticket cancellation")
+    elif userChoice == '4':
+        user.deleteUser()
+        del user
+        main()
+    elif userChoice == '5':
+        del user
+        print("Goodbye")
+
+
+main()
