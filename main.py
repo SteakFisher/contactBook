@@ -1,5 +1,6 @@
 from pprint import pprint
 import mysql.connector as sql
+from tabulate import tabulate
 
 db = sql.connect(user='root', password='00b', host='localhost', database='jay')
 cs = db.cursor()
@@ -7,6 +8,18 @@ cs = db.cursor()
 cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
            " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
            " NOT NULL, unique(username))")
+cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
+           " customerName varchar(30) NOT NULL, " +
+           "customerLastName varchar(30) NOT NULL, constraint foreign key (userid) references loginInfo(userId))")
+
+
+def getTableHeaders(tableName):
+    cs.execute("desc %s" % tableName)
+    tableNames = []
+    a = cs.fetchall()
+    for i in a:
+        tableNames.append(i[0])
+    return tableNames
 
 
 class User:
@@ -18,6 +31,11 @@ class User:
         # table, name = loginInfo with primary key = userId contains info such as user, pass and userId
         # create table logininfo(userId int primary key NOT NULL AUTO_INCREMENT, username varchar(30) NOT NULL,
         # password varchar(30) NOT NULL, unique(username));
+
+        # create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT,
+        # customerName varchar(30) NOT NULL, customerSurname varchar(30), customerLastName varchar(30),
+        # NOT NULL, constraint foreign key (userid) references loginInfo(userId))
+        # insert into customerinfo(userid, customername, customerlastname) values(1, "jay", "Bej");
 
         # another table, name = contactInfo with foreign key = userId and primary key = contactId contains
         # info such as userId, contactId, contactName, contactSurname, contactLastName
@@ -31,10 +49,32 @@ class User:
         # primary key = eventId has more info such as eventName, eventDate, eventLocation
 
     def deleteUser(self):
-        cs.execute("DELETE FROM logininfo WHERE userId = %s", (self.userId,))
+        cs.execute("DELETE FROM logininfo WHERE userId = %s" % self.userId)
         db.commit()
         print("User deleted")
 
+    def addPassenger(self):
+        a = input("Enter passenger first name: ")
+        b = input("Enter passenger last name: ")
+        cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (self.userId, a, b))
+        db.commit()
+        print("Passenger added")
+        cs.execute("SELECT customerid FROM customerInfo WHERE userid = %s" % self.userId)
+        c = cs.fetchall()
+        return Passenger(self.userId, c[0][0], a, b)
+
+    def getPassengers(self):
+        cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % self.userId)
+        passengers = cs.fetchall()
+        return passengers
+
+
+class Passenger:
+    def __init__(self, userId, customerId, customerName, customerLastName):
+        self.userId = userId
+        self.customerId = customerId
+        self.customerName = customerName
+        self.customerLastName = customerLastName
 
 def login():
     username = input("Enter your username: ")
@@ -44,7 +84,6 @@ def login():
     t = cs.fetchall()
     if len(t) > 0:
         print("Login successful")
-        print(t[0][1])
         return User(t[0][0], username, password, t[0][1])
     else:
         print("Login failed")
@@ -69,6 +108,50 @@ def signUp():
         return User(t[0][0], username, password, t[0][1])
 
 
+def ticketSystem(user):
+    passenger = False
+    cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % user.userId)
+    passengers = cs.fetchall()
+    if(len(passengers) != 0):
+        print("You have the following passengers:")
+        print(tabulate(passengers, getTableHeaders("customerinfo")))
+        a = int(input("Enter the passenger id (-1 for new passenger): "))
+        if(a == -1):
+            passenger = user.addPassenger()
+        else:
+            cs.execute("SELECT * FROM customerInfo WHERE customerid = %s" % a)
+            passengerDetails = cs.fetchall()
+            passenger = Passenger(user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3])
+
+    if(len(passengers) == 0):
+        passenger = user.addPassenger()
+
+
+    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Logout \n6) Exit \n(1/2/3/4/5/6)""")
+
+    ticketChoice = input("")
+    if ticketChoice == '1':
+        print("Ticket booking")
+    elif ticketChoice == '2':
+        print("Ticket checking")
+    elif ticketChoice == '3':
+        print("Ticket cancellation")
+    elif ticketChoice == '4':
+        user.deleteUser()
+        del user
+        main()
+    elif ticketChoice == '5':
+        del user
+        main()
+    elif ticketChoice == '6':
+        del user
+        print("Goodbye")
+        return
+    else:
+        print("Invalid option, input 1,2,3,4 or 5!")
+        ticketSystem(user)
+
+
 def main():
     user = False
     while user is False:
@@ -85,22 +168,7 @@ def main():
             print("Invalid option, input 1,2 or 3!")
 
     print("Welcome " + user.username + "!")
-
-    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Exit \n(1/2/3/4/5)""")
-    userChoice = input("")
-    if userChoice == '1':
-        print("Ticket booking")
-    elif userChoice == '2':
-        print("Ticket checking")
-    elif userChoice == '3':
-        print("Ticket cancellation")
-    elif userChoice == '4':
-        user.deleteUser()
-        del user
-        main()
-    elif userChoice == '5':
-        del user
-        print("Goodbye")
+    ticketSystem(user)
 
 
 main()
