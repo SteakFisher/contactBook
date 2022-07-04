@@ -4,13 +4,13 @@ from tabulate import tabulate
 
 db = sql.connect(user='root', password='00b', host='localhost', database='jay')
 cs = db.cursor()
-
+cs.execute("Create database if not exists jay")
 cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
            " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
            " NOT NULL, unique(username))")
 cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
-           " customerName varchar(30) NOT NULL, " +
-           "customerLastName varchar(30) NOT NULL, constraint foreign key (userid) references loginInfo(userId))")
+           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
+           "(userid) references loginInfo(userId), CONSTRAINT customerConstraint unique(customerName, customerLastName))")
 
 
 def getTableHeaders(tableName):
@@ -56,7 +56,14 @@ class User:
     def addPassenger(self):
         a = input("Enter passenger first name: ")
         b = input("Enter passenger last name: ")
-        cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (self.userId, a, b))
+        try:
+            cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (self.userId, a, b))
+        except:
+            print("Error! Passenger with the same details already exists!")
+            self.addPassenger()
+        else:
+            db.commit()
+            print("Passenger added")
         db.commit()
         print("Passenger added")
         cs.execute("SELECT customerid FROM customerInfo WHERE userid = %s" % self.userId)
@@ -76,11 +83,11 @@ class Passenger:
         self.customerName = customerName
         self.customerLastName = customerLastName
 
+
 def login():
     username = input("Enter your username: ")
     password = input("Enter your password: ")
-    cs.execute(
-        "SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
+    cs.execute("SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
     t = cs.fetchall()
     if len(t) > 0:
         print("Login successful")
@@ -112,24 +119,21 @@ def ticketSystem(user):
     passenger = False
     cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % user.userId)
     passengers = cs.fetchall()
-    if(len(passengers) != 0):
+    if len(passengers) != 0:
         print("You have the following passengers:")
         print(tabulate(passengers, getTableHeaders("customerinfo")))
         a = int(input("Enter the passenger id (-1 for new passenger): "))
-        if(a == -1):
+        if a == -1:
             passenger = user.addPassenger()
         else:
             cs.execute("SELECT * FROM customerInfo WHERE customerid = %s" % a)
             passengerDetails = cs.fetchall()
             passenger = Passenger(user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3])
-
-    if(len(passengers) == 0):
+    else:
         passenger = user.addPassenger()
-
-
     print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Logout \n6) Exit \n(1/2/3/4/5/6)""")
 
-    ticketChoice = input("")
+    ticketChoice = input(">>> ")
     if ticketChoice == '1':
         print("Ticket booking")
     elif ticketChoice == '2':
@@ -156,7 +160,7 @@ def main():
     user = False
     while user is False:
         print("""1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
-        loginChoice = input("")
+        loginChoice = input(">>> ")
         if loginChoice == '1':
             user = login()
         elif loginChoice == '2':
