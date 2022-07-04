@@ -1,16 +1,21 @@
 from pprint import pprint
 import mysql.connector as sql
 from tabulate import tabulate
+from datetime import datetime
 
 db = sql.connect(user='root', password='00b', host='localhost', database='jay')
 cs = db.cursor()
 cs.execute("Create database if not exists jay")
+cs.execute("use jay")
 cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
            " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
            " NOT NULL, unique(username))")
 cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
            " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
            "(userid) references loginInfo(userId), CONSTRAINT customerConstraint unique(customerName, customerLastName))")
+cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
+           " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
+           "(customerId) references customerInfo(customerId))")
 
 
 def getTableHeaders(tableName):
@@ -21,6 +26,21 @@ def getTableHeaders(tableName):
         tableNames.append(i[0])
     return tableNames
 
+def timeChecks(dateAndTime):
+    date = dateAndTime.split(" ")[0].split("-")
+    time = dateAndTime.split(" ")[1].split(":")
+
+    d1 = datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]), int(time[2]))
+
+    if d1.date() > datetime.now().date():
+        return True
+    elif d1.date() == datetime.now().date():
+        if d1.time() > datetime.now().time():
+            return True
+        else:
+            return False
+    elif (d1.date() < datetime.now().date()):
+        return False
 
 class User:
     def __init__(self, userId, username, password, permLevel):
@@ -64,7 +84,6 @@ class User:
         else:
             db.commit()
             print("Passenger added")
-        db.commit()
         print("Passenger added")
         cs.execute("SELECT customerid FROM customerInfo WHERE userid = %s" % self.userId)
         c = cs.fetchall()
@@ -82,6 +101,10 @@ class Passenger:
         self.customerId = customerId
         self.customerName = customerName
         self.customerLastName = customerLastName
+
+    def addTicket(self, departureTime, trainName):
+        cs.execute("Insert into ticketInfo values(%s, '%s', '%s')" % (self.customerId, departureTime, trainName))
+        db.commit()
 
 
 def login():
@@ -131,11 +154,16 @@ def ticketSystem(user):
             passenger = Passenger(user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3])
     else:
         passenger = user.addPassenger()
+
     print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Logout \n6) Exit \n(1/2/3/4/5/6)""")
 
     ticketChoice = input(">>> ")
     if ticketChoice == '1':
         print("Ticket booking")
+        dateAndTime = input("Enter the departure time (YYYY-MM-DD HH:MI:SS): ")
+        if timeChecks(dateAndTime):
+            passenger.addTicket(a, input("Enter train name: "))
+
     elif ticketChoice == '2':
         print("Ticket checking")
     elif ticketChoice == '3':
@@ -174,5 +202,6 @@ def main():
     print("Welcome " + user.username + "!")
     ticketSystem(user)
 
-
 main()
+
+# 2003-05-06 23:05:06
