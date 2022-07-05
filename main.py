@@ -3,6 +3,18 @@ import mysql.connector as sql
 from tabulate import tabulate
 from datetime import datetime
 
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 db = sql.connect(user='root', password='00b', host='localhost', database='jay')
 cs = db.cursor()
 cs.execute("Create database if not exists jay")
@@ -71,7 +83,7 @@ class User:
     def deleteUser(self):
         cs.execute("DELETE FROM logininfo WHERE userId = %s" % self.userId)
         db.commit()
-        print("User deleted")
+        print(bcolors.OKGREEN + "User deleted")
 
     def addPassenger(self):
         a = input("Enter passenger first name: ")
@@ -79,11 +91,11 @@ class User:
         try:
             cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (self.userId, a, b))
         except:
-            print("Error! Passenger with the same details already exists!")
+            print(bcolors.WARNING  + "Error! Passenger with the same details already exists!")
             self.addPassenger()
         else:
             db.commit()
-            print("Passenger added")
+            print(bcolors.OKGREEN + "Passenger added")
         cs.execute("SELECT customerid FROM customerInfo WHERE customerName = '%s' and customerLastName = '%s'" % (a, b))
         c = cs.fetchall()
         return Passenger(self.userId, c[0][0], a, b)
@@ -104,12 +116,12 @@ class Passenger:
     def addTicket(self, departureTime, trainName):
         cs.execute("Insert into ticketInfo(customerId, departureTime, trainName) values(%s, '%s', '%s')" % (self.customerId, departureTime, trainName))
         db.commit()
-        print("Ticket added")
+        print(bcolors.OKGREEN + "Ticket added")
 
     def deletePassenger(self):
         cs.execute("DELETE FROM customerInfo WHERE customerId = %s" % self.customerId)
         db.commit()
-        print("Passenger deleted")
+        print(bcolors.OKGREEN + "Passenger deleted")
 
 
 def getPassengerObj(user):
@@ -117,7 +129,7 @@ def getPassengerObj(user):
     cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % user.userId)
     passengers = cs.fetchall()
     if len(passengers) != 0:
-        print("You have the following passengers:")
+        print(bcolors.HEADER + "You have the following passengers:")
         print(tabulate(passengers, getTableHeaders("customerinfo")))
         a = int(input("Enter the customer id (-1 for new passenger): "))
         if a == -1:
@@ -127,7 +139,7 @@ def getPassengerObj(user):
             passengerDetails = cs.fetchall()
             passenger = Passenger(user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3])
     else:
-        print("You have no passengers as of now!")
+        print(bcolors.WARNING + "You have no passengers as of now!")
         passenger = user.addPassenger()
 
     return passenger
@@ -138,10 +150,10 @@ def login():
     cs.execute("SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
     t = cs.fetchall()
     if len(t) > 0:
-        print("Login successful")
+        print(bcolors.OKGREEN + "Login successful")
         return User(t[0][0], username, password, t[0][1])
     else:
-        print("Login failed")
+        print(bcolors.FAIL + "Login failed")
         return False
 
 
@@ -150,49 +162,49 @@ def signUp():
     cs.execute("SELECT userid FROM loginInfo WHERE username = '%s'" % username)
     t = cs.fetchall()
     if len(t) > 0:
-        print("Username already exists")
+        print(bcolors.WARNING + "Username already exists")
         return False
     else:
         password = input("Enter your password: ")
         cs.execute("INSERT INTO loginInfo(username, password) VALUES('%s', '%s')" % (username, password))
         db.commit()
-        print("Sign up successful")
+        print(bcolors.OKGREEN + "Sign up successful")
         cs.execute("SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
         t = cs.fetchall()
         return User(t[0][0], username, password, t[0][1])
 
 
 def ticketSystem(user, passenger):
-    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
+    print(bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
     ticketChoice = input(">>> ")
     if ticketChoice == '1':
-        print("Ticket booking")
+        print(bcolors.HEADER + "Ticket booking")
         dateAndTime = input("Enter the departure time (YYYY-MM-DD HH:MI:SS): ")
         if timeChecks(dateAndTime):
             passenger.addTicket(dateAndTime, input("Enter train name: "))
         else:
-            print("Invalid date and/or time")
+            print(bcolors.FAIL + "Invalid date and/or time")
 
     elif ticketChoice == '2':
-        print("Ticket checking")
-        print(passenger.customerName + " has the following tickets: ")
+        print(bcolors.HEADER + "Ticket checking")
+        print(bcolors.HEADER + passenger.customerName + " has the following tickets: ")
         cs.execute("SELECT * FROM ticketInfo WHERE customerid = %s" % passenger.customerId)
         tickets = cs.fetchall()
         if(len(tickets) != 0):
             print(tabulate(tickets, getTableHeaders("ticketinfo")))
         else:
-            print("No tickets found")
+            print(bcolors.FAIL + "No tickets found")
 
     elif ticketChoice == '3':
-        print("Ticket cancellation")
+        print(bcolors.HEADER + "Ticket cancellation")
         a = int(input("Enter ticketId of the ticket you'd like to cancel: "))
         try:
             cs.execute("Delete from ticketInfo where ticketId = %s" % a)
         except:
-            print("Error! Ticket does not exist")
+            print(bcolors.FAIL + "Error! Ticket does not exist")
         else:
             db.commit()
-            print("Ticket cancelled")
+            print(bcolors.OKGREEN + "Ticket cancelled")
 
     elif ticketChoice == '4':
         user.deleteUser()
@@ -213,29 +225,29 @@ def ticketSystem(user, passenger):
 
     elif ticketChoice == '7':
         user = False
-        print("Goodbye")
+        print(bcolors.OKGREEN + "Goodbye")
         return
     else:
-        print("Invalid option, input 1,2,3,4 or 5!")
+        print(bcolors.FAIL + "Invalid option, input 1,2,3,4 or 5!")
 
     ticketSystem(user, passenger)
 
 
 def main(user=False):
     while user is False:
-        print("""1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
+        print(bcolors.HEADER + """1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
         loginChoice = input(">>> ")
         if loginChoice == '1':
             user = login()
         elif loginChoice == '2':
             user = signUp()
         elif loginChoice == '3':
-            print("Goodbye")
+            print(bcolors.OKGREEN + "Goodbye")
             return
         else:
-            print("Invalid option, input 1,2 or 3!")
+            print(bcolors.FAIL + "Invalid option, input 1,2 or 3!")
 
-    print("Welcome " + user.username + "!")
+    print(bcolors.HEADER + "Welcome " + user.username + "!")
     passenger = getPassengerObj(user)
     ticketSystem(user, passenger)
 
