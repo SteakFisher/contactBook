@@ -12,10 +12,10 @@ cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NUL
            " NOT NULL, unique(username))")
 cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
            " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
-           "(userid) references loginInfo(userId), CONSTRAINT customerConstraint unique(customerName, customerLastName))")
+           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint unique(customerName, customerLastName))")
 cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
            " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
-           "(customerId) references customerInfo(customerId))")
+           "(customerId) references customerInfo(customerId)ON DELETE CASCADE)")
 
 
 def getTableHeaders(tableName):
@@ -84,7 +84,7 @@ class User:
         else:
             db.commit()
             print("Passenger added")
-        cs.execute("SELECT customerid FROM customerInfo WHERE userid = %s" % self.userId)
+        cs.execute("SELECT customerid FROM customerInfo WHERE customerName = '%s' and customerLastName = '%s'" % (a, b))
         c = cs.fetchall()
         return Passenger(self.userId, c[0][0], a, b)
 
@@ -106,6 +106,11 @@ class Passenger:
         db.commit()
         print("Ticket added")
 
+    def deletePassenger(self):
+        cs.execute("DELETE FROM customerInfo WHERE customerId = %s" % self.customerId)
+        db.commit()
+        print("Passenger deleted")
+
 
 def getPassengerObj(user):
     passenger = False
@@ -122,6 +127,7 @@ def getPassengerObj(user):
             passengerDetails = cs.fetchall()
             passenger = Passenger(user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3])
     else:
+        print("You have no passengers as of now!")
         passenger = user.addPassenger()
 
     return passenger
@@ -157,8 +163,7 @@ def signUp():
 
 
 def ticketSystem(user, passenger):
-    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Logout \n6) Exit \n(1/2/3/4/5/6)""")
-
+    print("""1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
     ticketChoice = input(">>> ")
     if ticketChoice == '1':
         print("Ticket booking")
@@ -167,7 +172,6 @@ def ticketSystem(user, passenger):
             passenger.addTicket(dateAndTime, input("Enter train name: "))
         else:
             print("Invalid date and/or time")
-
 
     elif ticketChoice == '2':
         print("Ticket checking")
@@ -192,16 +196,23 @@ def ticketSystem(user, passenger):
 
     elif ticketChoice == '4':
         user.deleteUser()
-        del user
+        del passenger
+        user = False
         main()
 
     elif ticketChoice == '5':
-        del user
+        passenger.deletePassenger()
+        del passenger
+        main(user)
+
+    elif ticketChoice == '6':
+        del passenger
+        user = False
         main()
         return
 
-    elif ticketChoice == '6':
-        del user
+    elif ticketChoice == '7':
+        user = False
         print("Goodbye")
         return
     else:
@@ -210,8 +221,7 @@ def ticketSystem(user, passenger):
     ticketSystem(user, passenger)
 
 
-def main():
-    user = False
+def main(user=False):
     while user is False:
         print("""1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
         loginChoice = input(">>> ")
@@ -231,4 +241,4 @@ def main():
 
 main()
 
-# 2003-05-06 23:05:06
+# 2023-05-06 23:05:06
