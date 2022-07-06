@@ -86,7 +86,7 @@ class User:
         print(bcolors.OKGREEN + "User deleted")
 
     def addPassenger(self):
-        a = input("Enter passenger first name: ")
+        a = input(bcolors.OKCYAN + "Enter passenger first name: ")
         b = input("Enter passenger last name: ")
         try:
             cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (self.userId, a, b))
@@ -179,7 +179,7 @@ def ticketSystem(user, passenger):
     ticketChoice = input(">>> ")
     if ticketChoice == '1':
         print(bcolors.HEADER + "Ticket booking")
-        dateAndTime = input("Enter the departure time (YYYY-MM-DD HH:MI:SS): ")
+        dateAndTime = input(bcolors.OKCYAN + "Enter the departure time (YYYY-MM-DD HH:MI:SS): ")
         if timeChecks(dateAndTime):
             passenger.addTicket(dateAndTime, input("Enter train name: "))
         else:
@@ -211,11 +211,13 @@ def ticketSystem(user, passenger):
         del passenger
         user = False
         main()
+        return
 
     elif ticketChoice == '5':
         passenger.deletePassenger()
         del passenger
         main(user)
+        return
 
     elif ticketChoice == '6':
         del passenger
