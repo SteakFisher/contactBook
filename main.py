@@ -130,8 +130,8 @@ def getPassengerObj(user):
     passengers = cs.fetchall()
     if len(passengers) != 0:
         print(bcolors.HEADER + "You have the following passengers:")
-        print(tabulate(passengers, getTableHeaders("customerinfo")))
-        a = int(input("Enter the customer id (-1 for new passenger): "))
+        print(bcolors.OKGREEN + tabulate(passengers, getTableHeaders("customerinfo")))
+        a = int(input(bcolors.OKCYAN + "Enter the customer id (-1 for new passenger): "))
         if a == -1:
             passenger = user.addPassenger()
         else:
@@ -187,11 +187,11 @@ def ticketSystem(user, passenger):
 
     elif ticketChoice == '2':
         print(bcolors.HEADER + "Ticket checking")
-        print(bcolors.HEADER + passenger.customerName + " has the following tickets: ")
+        print(bcolors.OKGREEN + passenger.customerName + " has the following tickets: ")
         cs.execute("SELECT * FROM ticketInfo WHERE customerid = %s" % passenger.customerId)
         tickets = cs.fetchall()
         if(len(tickets) != 0):
-            print(tabulate(tickets, getTableHeaders("ticketinfo")))
+            print(bcolors.OKGREEN + tabulate(tickets, getTableHeaders("ticketinfo")))
         else:
             print(bcolors.FAIL + "No tickets found")
 
