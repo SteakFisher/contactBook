@@ -11,10 +11,7 @@
       <user-name>root</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="schema">
-            <name qname="jay" />
-            <name qname="information_schema" />
-          </node>
+          <node kind="schema" qname="jay" />
         </introspection-scope>
       </schema-mapping>
     </data-source>
