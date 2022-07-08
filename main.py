@@ -1,7 +1,7 @@
-from pprint import pprint
+from datetime import datetime
+
 import mysql.connector as sql
 from tabulate import tabulate
-from datetime import datetime
 
 
 class bcolors:
