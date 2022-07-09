@@ -1,3 +1,8 @@
+#pls daddy steak add this:
+
+#steak dumb & bald
+
+
 from datetime import datetime
 
 import mysql.connector as sql
