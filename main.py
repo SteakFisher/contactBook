@@ -1,3 +1,5 @@
+#steaks bald
+
 from datetime import datetime
 
 import mysql.connector as sql
