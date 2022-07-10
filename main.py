@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import tkinter as tk
 import mysql.connector as sql
 from tabulate import tabulate
 
@@ -103,21 +104,6 @@ class Passenger:
         cs.execute("DELETE FROM customerInfo WHERE customerId = %s" % self.customerId)
         db.commit()
         print(bcolors.OKGREEN + "Passenger deleted")
-
-
-db = sql.connect(user='root', password='00b', host='localhost', database='jay')
-cs = db.cursor()
-cs.execute("Create database if not exists jay")
-cs.execute("use jay")
-cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
-           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
-           " NOT NULL, unique(username))")
-cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
-           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
-           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint unique(customerName, customerLastName))")
-cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
-           " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
-           "(customerId) references customerInfo(customerId)ON DELETE CASCADE)")
 
 
 def getPassengerObj(user):
@@ -249,6 +235,20 @@ def main(user=False):
     passenger = getPassengerObj(user)
     ticketSystem(user, passenger)
 
+
+db = sql.connect(user='root', password='00b', host='localhost', database='jay')
+cs = db.cursor()
+cs.execute("Create database if not exists jay")
+cs.execute("use jay")
+cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
+           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
+           " NOT NULL, unique(username))")
+cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
+           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
+           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint unique(customerName, customerLastName))")
+cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
+           " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
+           "(customerId) references customerInfo(customerId)ON DELETE CASCADE)")
 
 main()
 
