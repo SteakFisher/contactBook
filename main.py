@@ -4,42 +4,6 @@ import mysql.connector as sql
 from tabulate import tabulate
 
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-db = sql.connect(user='root', password='00b', host='localhost', database='jay')
-cs = db.cursor()
-cs.execute("Create database if not exists jay")
-cs.execute("use jay")
-cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
-           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
-           " NOT NULL, unique(username))")
-cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
-           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
-           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint unique(customerName, customerLastName))")
-cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
-           " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
-           "(customerId) references customerInfo(customerId)ON DELETE CASCADE)")
-
-
-def getTableHeaders(tableName):
-    cs.execute("desc %s" % tableName)
-    tableNames = []
-    a = cs.fetchall()
-    for i in a:
-        tableNames.append(i[0])
-    return tableNames
-
-
 def timeChecks(dateAndTime):
     date = dateAndTime.split(" ")[0].split("-")
     time = dateAndTime.split(" ")[1].split(":")
@@ -57,31 +21,43 @@ def timeChecks(dateAndTime):
         return False
 
 
+def getTableHeaders(tableName):
+    cs.execute("desc %s" % tableName)
+    tableNames = []
+    a = cs.fetchall()
+    for i in a:
+        tableNames.append(i[0])
+    return tableNames
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 class User:
     def __init__(self, userId, username, password, permLevel):
         self.username = username
         self.password = password
         self.userId = userId
         self.permLevel = permLevel
-        # table, name = loginInfo with primary key = userId contains info such as user, pass and userId
         # create table logininfo(userId int primary key NOT NULL AUTO_INCREMENT, username varchar(30) NOT NULL,
         # password varchar(30) NOT NULL, unique(username));
 
         # create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT,
         # customerName varchar(30) NOT NULL, customerSurname varchar(30), customerLastName varchar(30),
         # NOT NULL, constraint foreign key (userid) references loginInfo(userId))
-        # insert into customerinfo(userid, customername, customerlastname) values(1, "jay", "Bej");
 
-        # another table, name = contactInfo with foreign key = userId and primary key = contactId contains
-        # info such as userId, contactId, contactName, contactSurname, contactLastName
         # create table contactInfo(userId int NOT NULL, contactId int primary key NOT NULL
         # AUTO_INCREMENT, contactName varchar(30), contactSurname varchar(30),
         # contactLastName varchar(30), constraint userId foreign key(userId) references loginInfo(userid));
-
-        # another table, name = contactNumbers with Foreign Key = contactId
-        # and primary key = numId has more info such as contactNumber, contactType
-        # another table, name = events with Foreign Key = contactId and
-        # primary key = eventId has more info such as eventName, eventDate, eventLocation
 
     def deleteUser(self):
         cs.execute("DELETE FROM logininfo WHERE userId = %s" % self.userId)
@@ -127,6 +103,21 @@ class Passenger:
         cs.execute("DELETE FROM customerInfo WHERE customerId = %s" % self.customerId)
         db.commit()
         print(bcolors.OKGREEN + "Passenger deleted")
+
+
+db = sql.connect(user='root', password='00b', host='localhost', database='jay')
+cs = db.cursor()
+cs.execute("Create database if not exists jay")
+cs.execute("use jay")
+cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
+           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
+           " NOT NULL, unique(username))")
+cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
+           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
+           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint unique(customerName, customerLastName))")
+cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
+           " departureTime DATETIME NOT NULL, trainName varchar(30) NOT NULL, constraint foreign key " +
+           "(customerId) references customerInfo(customerId)ON DELETE CASCADE)")
 
 
 def getPassengerObj(user):
@@ -182,8 +173,8 @@ def signUp():
 
 
 def ticketSystem(user, passenger):
-    print(
-        bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account \n5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
+    print(bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account
+\n5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
     ticketChoice = input(">>> ")
     if ticketChoice == '1':
         print(bcolors.HEADER + "Ticket booking")
