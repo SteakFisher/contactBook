@@ -236,7 +236,7 @@ def main(user=False):
     ticketSystem(user, passenger)
 
 
-db = sql.connect(user='root', password='00b', host='localhost', database='jay')
+db = sql.connect(user='root', password='00b', host='localhost')
 cs = db.cursor()
 cs.execute("Create database if not exists jay")
 cs.execute("use jay")
