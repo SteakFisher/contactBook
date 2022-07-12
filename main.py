@@ -1,3 +1,6 @@
+#उवू स्टेक मेरे डैडी हैं उवू सेक्सी
+#steak bald uwu
+
 from datetime import datetime
 
 import tkinter as tk
