@@ -167,8 +167,8 @@ def main(user=False):
 
 db = sql.connect(user='root', password='00b', host='localhost')
 cs = db.cursor()
-cs.execute("Create database if not exists jay")
-cs.execute("use jay")
+cs.execute("Create database if not exists railway")
+cs.execute("use railway")
 cs.execute(" CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
            " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
            " NOT NULL, unique(username))")
