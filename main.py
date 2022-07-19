@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import tkinter as tk
+import os
 import mysql.connector as sql
 from tabulate import tabulate
 
@@ -223,6 +224,7 @@ def main(user=False):
         loginChoice = input(">>> ")
         if loginChoice == '1':
             user = login()
+            os.system('cls')
         elif loginChoice == '2':
             user = signUp()
         elif loginChoice == '3':
