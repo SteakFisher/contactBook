@@ -11,11 +11,14 @@ from datetime import datetime
 
 def getPassengerObj(user):
     cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % user.userId)
-    passengers = cs.fetchall()
+    passengers = []
+    for i in cs.fetchall():
+        passengers.append(i[1:])
+
     if len(passengers) != 0:
         print(bcolors.HEADER + "You have the following passengers:")
         print(bcolors.OKGREEN + tabulate(passengers,
-              getTableHeaders(cs, "customerinfo")))
+              getTableHeaders(cs, "customerinfo")[1:]))
         a = int(input(bcolors.OKCYAN +
                 "Enter the customer id (-1 for new passenger): "))
         os.system('cls')
@@ -92,10 +95,14 @@ def ticketSystem(user, passenger):
               " has the following tickets: ")
         cs.execute("SELECT * FROM ticketInfo WHERE customerid = %s" %
                    passenger.customerId)
-        tickets = cs.fetchall()
+        tickets = []
+
+        for i in cs.fetchall():
+            tickets.append(i[1:])
+
         if len(tickets) != 0:
             print(bcolors.OKGREEN + tabulate(tickets,
-                  getTableHeaders(cs, "ticketinfo")))
+                  getTableHeaders(cs, "ticketinfo")[1:]))
         else:
             print(bcolors.FAIL + "No tickets found")
 
