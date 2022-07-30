@@ -12,8 +12,8 @@
       <schema-mapping>
         <introspection-scope>
           <node kind="schema">
-            <name qname="jay" />
             <name qname="information_schema" />
+            <name qname="railway" />
           </node>
         </introspection-scope>
       </schema-mapping>

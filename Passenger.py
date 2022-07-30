@@ -10,9 +10,9 @@ class Passenger:
         self.db = db
         self.cs = db.cursor()
 
-    def addTicket(self, departureTime, trainName):
-        self.cs.execute("Insert into ticketInfo(customerId, departureTime, trainName) values(%s, '%s', '%s')" % (
-            self.customerId, departureTime, trainName))
+    def addTicket(self, trainId):
+        self.cs.execute("Insert into ticketInfo(customerId, trainId) values(%s, %s)" % (
+            self.customerId, trainId))
         self.db.commit()
         print(bcolors.OKGREEN + "Ticket added")
 
