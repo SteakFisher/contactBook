@@ -1,4 +1,4 @@
-from bColors import *
+import bColors
 
 
 class Passenger:
@@ -14,10 +14,10 @@ class Passenger:
         self.cs.execute("Insert into ticketInfo(customerId, trainId) values(%s, %s)" % (
             self.customerId, trainId))
         self.db.commit()
-        print(bcolors.OKGREEN + "Ticket added")
+        print(bColors.bcolors.OKGREEN + "Ticket added")
 
     def deletePassenger(self):
         self.cs.execute("DELETE FROM customerInfo WHERE customerId = %s" %
                         self.customerId)
         self.db.commit()
-        print(bcolors.OKGREEN + "Passenger deleted")
+        print(bColors.bcolors.OKGREEN + "Passenger deleted")

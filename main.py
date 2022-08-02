@@ -1,130 +1,91 @@
 import os
 import mysql.connector as sql
 from tabulate import tabulate
-from customFunc import *
-from bColors import *
-from User import *
-from Passenger import *
+import customFunc
+import bColors
 from datetime import datetime
 from testHelp import *
+from loginProc import *
 
+db = sql.connect(user='root', password='00b', host='localhost')
+cs = db.cursor()
+cs.execute("Create database if not exists railway")
+cs.execute("use railway")
 
-def getPassengerObj(user):
-    cs.execute("SELECT * FROM customerInfo WHERE userid = %s" % user.userId)
-    passengers = []
-    for i in cs.fetchall():
-        passengers.append(i[1:])
+cs.execute("CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
+           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
+           " NOT NULL, unique(username))")
 
-    if len(passengers) != 0:
-        print(bcolors.HEADER + "You have the following passengers:")
-        print(bcolors.OKGREEN + tabulate(passengers,
-              getTableHeaders(cs, "customerinfo")[1:]))
-        a = int(input(bcolors.OKCYAN +
-                "Enter the customer id (-1 for new passenger): "))
-        os.system('cls')
-        if a == -1:
-            passenger = user.addPassenger()
-        else:
-            cs.execute("SELECT * FROM customerInfo WHERE customerid = %s" % a)
-            passengerDetails = cs.fetchall()
-            passenger = Passenger(
-                user.userId, passengerDetails[0][1], passengerDetails[0][2], passengerDetails[0][3], db)
-    else:
-        print(bcolors.WARNING + "You have no passengers as of now!")
-        passenger = user.addPassenger()
+cs.execute(
+    "create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
+    " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
+    "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint" +
+    " unique(customerName, customerLastName))")
 
-    return passenger
+cs.execute("CREATE TABLE IF NOT EXISTS trainInfo(trainId int PRIMARY KEY NOT NULL AUTO_INCREMENT, trainName " +
+           "varchar(30) NOT NULL, departureTime datetime NOT NULL, maxPassengerCount int NOT NULL)")
 
-
-def login():
-    username = input("Enter your username: ")
-    password = input("Enter your password: ")
-    cs.execute(
-        "SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
-    t = cs.fetchall()
-    os.system('cls')
-    if len(t) > 0:
-        print(bcolors.OKGREEN + "Login successful")
-        return User(t[0][0], username, password, t[0][1], db)
-    else:
-        print(bcolors.FAIL + "Login failed")
-        return False
-
-
-def signUp():
-    username = input("Enter your username: ")
-    cs.execute("SELECT userid FROM loginInfo WHERE username = '%s'" % username)
-    t = cs.fetchall()
-    if len(t) > 0:
-        os.system('cls')
-        print(bcolors.WARNING + "Username already exists")
-        return False
-
-    else:
-        password = input("Enter your password: ")
-        cs.execute("INSERT INTO loginInfo(username, password) VALUES('%s', '%s')" % (
-            username, password))
-        db.commit()
-        os.system('cls')
-        print(bcolors.OKGREEN + "Sign up successful")
-        cs.execute(
-            "SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
-        t = cs.fetchall()
-        return User(t[0][0], username, password, t[0][1],  db)
+cs.execute(
+    "create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
+    " trainId int, constraint foreign key "
+    "(customerId) references customerInfo(customerId) ON DELETE CASCADE, constraint foreign key (ticketId) " +
+    " references trainInfo(trainId) ON DELETE CASCADE)")
 
 
 def ticketSystem(user, passenger):
     print()
-    print(bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account
+    print(bColors.bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account
 5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
     ticketChoice = input(">>> ")
     os.system('cls')
     if ticketChoice == '1':
-        print(bcolors.HEADER + "Ticket booking")
+        print(bColors.bcolors.HEADER + "Ticket booking")
         dateAlone = input(
-            bcolors.OKCYAN + "Enter the departure date (YYYY-MM-DD): ")
+            bColors.bcolors.OKCYAN + "Enter the departure date (YYYY-MM-DD): ")
 
-        if dateChecks(dateAlone):
+        if customFunc.dateChecks(dateAlone):
             cs.execute(
                 "SELECT trainId, trainName, departureTime FROM traininfo WHERE departuretime LIKE '%s %%'" % dateAlone)
             t = cs.fetchall()
             print(f"Available trains on {dateAlone}:")
-            print(bcolors.OKGREEN + tabulate(t, getTableHeaders(cs, "traininfo")[:3]))
+            print(bColors.bcolors.OKGREEN + tabulate(t, customFunc.getTableHeaders(cs, "traininfo")[:3]))
+            print(t)
             trainId = input("Enter train id: ")
             passenger.addTicket(trainId)
-
             os.system('cls')
         else:
-            print(bcolors.FAIL + "Invalid date and/or time (Tickets must be booked at least a day in advance)")
+            print(bColors.bcolors.FAIL + "Invalid date and/or time (Tickets must be booked at least a day in advance)")
 
     elif ticketChoice == '2':
-        print(bcolors.HEADER + "Ticket checking")
-        print(bcolors.OKGREEN + passenger.customerName +
+        print(bColors.bcolors.HEADER + "Ticket checking")
+        print(bColors.bcolors.OKGREEN + passenger.customerName +
               " has the following tickets: ")
-        cs.execute("SELECT * FROM ticketInfo WHERE customerid = %s" %
+        cs.execute("SELECT ticketId, trainId FROM ticketInfo WHERE customerid = %s" %
                    passenger.customerId)
-        tickets = []
+        t = cs.fetchall()
+        tickets = [t[0][0]]
+        cs.execute("SELECT trainName, departureTime FROM traininfo WHERE trainId = %s" % t[0][1])
 
-        for i in cs.fetchall():
-            tickets.append(i[1:])
+        for i in cs.fetchall()[0]:
+            tickets.append(i)
+        print(tickets)
 
         if len(tickets) != 0:
-            print(bcolors.OKGREEN + tabulate(tickets,
-                  getTableHeaders(cs, "ticketinfo")[1:]))
+            print(bColors.bcolors.OKGREEN + tabulate(tickets, ["Ticket Id", "Train Name", "Departure time"]))
         else:
-            print(bcolors.FAIL + "No tickets found")
+            print(bColors.bcolors.FAIL + "No tickets found")
 
     elif ticketChoice == '3':
-        print(bcolors.HEADER + "Ticket cancellation")
+        print(bColors.bcolors.HEADER + "Ticket cancellation")
         a = int(input("Enter ticketId of the ticket you'd like to cancel: "))
         os.system('cls')
         try:
             cs.execute("Delete from ticketInfo where ticketId = %s" % a)
         except:
-            print(bcolors.FAIL + "Error! Ticket does not exist")
+            print(bColors.bcolors.FAIL + "Error! Ticket does not exist")
         else:
             db.commit()
-            print(bcolors.OKGREEN + "Ticket cancelled")
+            print(bColors.bcolors.OKGREEN + "Ticket cancelled")
 
     elif ticketChoice == '4':
         user.deleteUser()
@@ -144,10 +105,10 @@ def ticketSystem(user, passenger):
         return
 
     elif ticketChoice == '7':
-        print(bcolors.OKGREEN + "Goodbye")
+        print(bColors.bcolors.OKGREEN + "Goodbye")
         return
     else:
-        print(bcolors.FAIL + "Invalid option, input 1,2,3,4 or 5!")
+        print(bColors.bcolors.FAIL + "Invalid option, input 1,2,3,4 or 5!")
         ticketSystem(user, passenger)
         return
 
@@ -157,43 +118,21 @@ def ticketSystem(user, passenger):
 def main(user=False):
     os.system("cls")
     while user is False:
-        print(bcolors.HEADER + """1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
+        print(bColors.bcolors.HEADER + """1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
         loginChoice = input(">>> ")
         if loginChoice == '1':
-            user = login()
+            user = login(db)
         elif loginChoice == '2':
-            user = signUp()
+            user = signUp(db)
         elif loginChoice == '3':
-            print(bcolors.OKGREEN + "Goodbye")
+            print(bColors.bcolors.OKGREEN + "Goodbye")
             return
         else:
-            print(bcolors.FAIL + "Invalid option, input 1,2 or 3!")
-    print(bcolors.HEADER + "Welcome " + user.username + "!")
-    passenger = getPassengerObj(user)
+            print(bColors.bcolors.FAIL + "Invalid option, input 1,2 or 3!")
+    print(bColors.bcolors.HEADER + "Welcome " + user.username + "!")
+    passenger = customFunc.getPassengerObj(user, db)
     ticketSystem(user, passenger)
 
-
-db = sql.connect(user='root', password='00b', host='localhost')
-cs = db.cursor()
-cs.execute("Create database if not exists railway")
-cs.execute("use railway")
-
-cs.execute("CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
-           " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
-           " NOT NULL, unique(username))")
-
-cs.execute("create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
-           " customerName varchar(30) NOT NULL, customerLastName varchar(30) NOT NULL, constraint foreign key " +
-           "(userid) references loginInfo(userId) ON DELETE CASCADE, CONSTRAINT customerConstraint" +
-           " unique(customerName, customerLastName))")
-
-cs.execute("CREATE TABLE IF NOT EXISTS trainInfo(trainId int PRIMARY KEY NOT NULL AUTO_INCREMENT, trainName " +
-           "varchar(30) NOT NULL, departureTime datetime NOT NULL, maxPassengerCount int NOT NULL)")
-
-cs.execute("create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
-           " trainId int, constraint foreign key " 
-           "(customerId) references customerInfo(customerId) ON DELETE CASCADE, constraint foreign key (ticketId) " +
-           " references trainInfo(trainId) ON DELETE CASCADE)")
 
 main()
 

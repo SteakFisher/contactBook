@@ -1,5 +1,5 @@
-from bColors import *
-from Passenger import *
+import bColors
+import Passenger
 import os
 
 
@@ -16,26 +16,26 @@ class User:
         self.cs.execute(
             "DELETE FROM logininfo WHERE userId = %s" % self.userId)
         self.db.commit()
-        print(bcolors.OKGREEN + "User deleted")
+        print(bColors.bcolors.OKGREEN + "User deleted")
 
     def addPassenger(self):
-        a = input(bcolors.OKCYAN + "Enter passenger first name: ")
+        a = input(bColors.bcolors.OKCYAN + "Enter passenger first name: ")
         b = input("Enter passenger last name: ")
         os.system('cls')
         try:
             self.cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (
                 self.userId, a, b))
         except:
-            print(bcolors.WARNING +
+            print(bColors.bcolors.WARNING +
                   "Error! Passenger with the same details already exists!")
             self.addPassenger()
         else:
             self.db.commit()
-            print(bcolors.OKGREEN + "Passenger added")
+            print(bColors.bcolors.OKGREEN + "Passenger added")
         self.cs.execute(
             "SELECT customerid FROM customerInfo WHERE customerName = '%s' and customerLastName = '%s'" % (a, b))
         c = self.cs.fetchall()
-        return Passenger(self.userId, c[0][0], a, b, self.db)
+        return Passenger.Passenger(self.userId, c[0][0], a, b, self.db)
 
     def getPassengers(self):
         self.cs.execute("SELECT * FROM customerInfo WHERE userid = %s" %
