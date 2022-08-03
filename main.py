@@ -22,7 +22,8 @@ cs.execute("CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL
            " NOT NULL, unique(username))")
 
 try:
-    cs.execute("INSERT INTO logininfo(username, password, permLevel) VALUES('admin', 'pass', 'admin')")
+    cs.execute(
+        "INSERT INTO logininfo(username, password, permLevel) VALUES('admin', 'pass', 'admin')")
 except:
     pass
 else:
@@ -45,7 +46,6 @@ cs.execute(
 
 
 def ticketSystem(user, passenger):
-    print()
     print(bColors.bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account
 5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
     ticketChoice = input(">>> ")
@@ -60,12 +60,14 @@ def ticketSystem(user, passenger):
                 "SELECT trainId, trainName, departureTime FROM traininfo WHERE departuretime LIKE '%s %%'" % dateAlone)
             t = cs.fetchall()
             print(f"Available trains on {dateAlone}:")
-            print(bColors.bcolors.OKGREEN + tabulate(t, customFunc.getTableHeaders(cs, "traininfo")[:3]))
+            print(bColors.bcolors.OKGREEN + tabulate(t,
+                  customFunc.getTableHeaders(cs, "traininfo")[:3]))
             trainId = input("Enter train id: ")
             passenger.addTicket(trainId)
             os.system('cls')
         else:
-            print(bColors.bcolors.FAIL + "Invalid date and/or time (Tickets must be booked at least a day in advance)")
+            print(bColors.bcolors.FAIL +
+                  "Invalid date and/or time (Tickets must be booked at least a day in advance)")
 
     elif ticketChoice == '2':
         print(bColors.bcolors.HEADER + "Ticket checking")
@@ -74,14 +76,16 @@ def ticketSystem(user, passenger):
         cs.execute("SELECT ticketId, trainId FROM ticketInfo WHERE customerid = %s" %
                    passenger.customerId)
         t = cs.fetchall()
-        tickets = [t[0][0]]
-        cs.execute("SELECT trainName, departureTime FROM traininfo WHERE trainId = %s" % t[0][1])
-
-        for i in cs.fetchall()[0]:
-            tickets.append(i)
+        tickets = []
+        for i in t:
+            cs.execute(
+                "SELECT trainName, departureTime FROM traininfo WHERE trainId = %s" % i[1])
+            r = cs.fetchall()
+            tickets.append([i[0], r[0][0], r[0][1]])
 
         if len(tickets) != 0:
-            print(bColors.bcolors.OKGREEN + tabulate([tickets], ["Ticket Id", "Train Name", "Departure time"]))
+            print(bColors.bcolors.OKGREEN +
+                  tabulate(tickets, ["Ticket Id", "Train Name", "Departure time"]))
         else:
             print(bColors.bcolors.FAIL + "No tickets found")
 
@@ -139,9 +143,11 @@ def adminSystem(user):
     if adminChoice == '1':
         print(bColors.bcolors.HEADER + "Add train")
         trainName = input(bColors.bcolors.OKCYAN + "Enter train name: ")
-        departureTime = input(bColors.bcolors.OKCYAN + "Enter departure time (YYYY-MM-DD HH:MM): ")
+        departureTime = input(bColors.bcolors.OKCYAN +
+                              "Enter departure time (YYYY-MM-DD HH:MM): ")
         if customFunc.timeChecks(departureTime):
-            maxPassengerCount = int(input(bColors.bcolors.OKCYAN + "Enter max passenger count: "))
+            maxPassengerCount = int(
+                input(bColors.bcolors.OKCYAN + "Enter max passenger count: "))
             os.system('cls')
             try:
                 cs.execute("INSERT INTO traininfo(trainName, departureTime, maxPassengerCount) VALUES('%s', '%s', %s)" %
@@ -170,16 +176,19 @@ def adminSystem(user):
 
     elif adminChoice == '3':
         print(bColors.bcolors.HEADER + "List trains")
-        cs.execute("SELECT trainId, trainName, departureTime, maxPassengerCount FROM traininfo")
+        cs.execute(
+            "SELECT trainId, trainName, departureTime, maxPassengerCount FROM traininfo")
         t = cs.fetchall()
         print(f"Available trains:")
-        print(bColors.bcolors.OKGREEN + tabulate(t, customFunc.getTableHeaders(cs, "traininfo")[:4]))
+        print(bColors.bcolors.OKGREEN + tabulate(t,
+              customFunc.getTableHeaders(cs, "traininfo")[:4]))
         adminSystem(user)
 
     elif adminChoice == '4':
         print(bColors.bcolors.HEADER + "Add admin")
         adminName = input(bColors.bcolors.OKCYAN + "Enter admin name: ")
-        adminPassword = input(bColors.bcolors.OKCYAN + "Enter admin password: ")
+        adminPassword = input(bColors.bcolors.OKCYAN +
+                              "Enter admin password: ")
         os.system('cls')
         try:
             cs.execute("INSERT INTO logininfo(username, password, permLevel) VALUES('%s', '%s', 'admin')" %
@@ -193,17 +202,19 @@ def adminSystem(user):
 
     elif adminChoice == '5':
         print(bColors.bcolors.HEADER + "List users")
-        cs.execute("SELECT userId, username, password, permLevel FROM logininfo WHERE permLevel = 'user'")
+        cs.execute(
+            "SELECT userId, username, password, permLevel FROM logininfo WHERE permLevel = 'user'")
         nt = []
         t = cs.fetchall()
 
         for i in t:
-            a,b,c = i[0], i[1], i[3]
-            t = (a,b,c)
+            a, b, c = i[0], i[1], i[3]
+            t = (a, b, c)
             nt.append(t)
 
         print("Available users:")
-        print(bColors.bcolors.OKGREEN + tabulate(nt, customFunc.getTableHeaders(cs, "logininfo")[:2]))
+        print(bColors.bcolors.OKGREEN + tabulate(nt,
+              customFunc.getTableHeaders(cs, "logininfo")[:2]))
         adminSystem(user)
 
     elif adminChoice == '6':
@@ -234,7 +245,8 @@ def adminSystem(user):
 def main(user=False):
     os.system("cls")
     while user is False:
-        print(bColors.bcolors.HEADER + """1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
+        print(bColors.bcolors.HEADER +
+              """1) Login \n2) Sign up \n3) Exit \n(1/2/3)""")
         loginChoice = input(">>> ")
         if loginChoice == '1':
             user = login(db)
