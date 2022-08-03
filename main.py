@@ -4,7 +4,6 @@ from tabulate import tabulate
 import customFunc
 import User
 import bColors
-from datetime import datetime
 from testHelp import *
 from loginProc import *
 
