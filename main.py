@@ -2,10 +2,15 @@ import os
 import mysql.connector as sql
 from tabulate import tabulate
 import customFunc
+import User
 import bColors
 from datetime import datetime
 from testHelp import *
 from loginProc import *
+
+#############################
+# DEFAULT ADMIN USER = "admin" AND PASSWORD = "pass"
+#############################
 
 db = sql.connect(user='root', password='00b', host='localhost')
 cs = db.cursor()
@@ -15,6 +20,13 @@ cs.execute("use railway")
 cs.execute("CREATE TABLE IF NOT EXISTS logininfo(userId int primary key NOT NULL AUTO_INCREMENT," +
            " username varchar(30) NOT NULL, password varchar(30) NOT NULL, permLevel varchar(20) DEFAULT 'user'" +
            " NOT NULL, unique(username))")
+
+try:
+    cs.execute("INSERT INTO logininfo(username, password, permLevel) VALUES('admin', 'pass', 'admin')")
+except:
+    pass
+else:
+    db.commit()
 
 cs.execute(
     "create table if not exists customerInfo(userid int, customerId int primary key NOT NULL AUTO_INCREMENT," +
@@ -49,7 +61,6 @@ def ticketSystem(user, passenger):
             t = cs.fetchall()
             print(f"Available trains on {dateAlone}:")
             print(bColors.bcolors.OKGREEN + tabulate(t, customFunc.getTableHeaders(cs, "traininfo")[:3]))
-            print(t)
             trainId = input("Enter train id: ")
             passenger.addTicket(trainId)
             os.system('cls')
@@ -68,10 +79,9 @@ def ticketSystem(user, passenger):
 
         for i in cs.fetchall()[0]:
             tickets.append(i)
-        print(tickets)
 
         if len(tickets) != 0:
-            print(bColors.bcolors.OKGREEN + tabulate(tickets, ["Ticket Id", "Train Name", "Departure time"]))
+            print(bColors.bcolors.OKGREEN + tabulate([tickets], ["Ticket Id", "Train Name", "Departure time"]))
         else:
             print(bColors.bcolors.FAIL + "No tickets found")
 
@@ -106,13 +116,119 @@ def ticketSystem(user, passenger):
 
     elif ticketChoice == '7':
         print(bColors.bcolors.OKGREEN + "Goodbye")
+        user.permLevel = 'exit'
+        os.system('cls')
         return
+
     else:
         print(bColors.bcolors.FAIL + "Invalid option, input 1,2,3,4 or 5!")
         ticketSystem(user, passenger)
         return
 
     ticketSystem(user, passenger)
+
+
+def adminSystem(user):
+    print()
+    print(bColors.bcolors.HEADER + """1) Add train \n2) Delete train \n3) List trains \n4) Add admin \n5) List users 
+6) Select user \n7) Exit \n(1/2/3/4/5/7)""")
+
+    adminChoice = input(">>> ")
+    os.system('cls')
+
+    if adminChoice == '1':
+        print(bColors.bcolors.HEADER + "Add train")
+        trainName = input(bColors.bcolors.OKCYAN + "Enter train name: ")
+        departureTime = input(bColors.bcolors.OKCYAN + "Enter departure time (YYYY-MM-DD HH:MM): ")
+        if customFunc.timeChecks(departureTime):
+            maxPassengerCount = int(input(bColors.bcolors.OKCYAN + "Enter max passenger count: "))
+            os.system('cls')
+            try:
+                cs.execute("INSERT INTO traininfo(trainName, departureTime, maxPassengerCount) VALUES('%s', '%s', %s)" %
+                           (trainName, departureTime, maxPassengerCount))
+            except:
+                print(bColors.bcolors.FAIL + "Error! Train already exists")
+            else:
+                db.commit()
+                print(bColors.bcolors.OKGREEN + "Train added")
+        else:
+            print(bColors.bcolors.FAIL + "Invalid date and/or time")
+        adminSystem(user)
+
+    elif adminChoice == '2':
+        print(bColors.bcolors.HEADER + "Delete train")
+        trainId = int(input(bColors.bcolors.OKCYAN + "Enter train id: "))
+        os.system('cls')
+        try:
+            cs.execute("DELETE FROM traininfo WHERE trainId = %s" % trainId)
+        except:
+            print(bColors.bcolors.FAIL + "Error! Train does not exist")
+        else:
+            db.commit()
+            print(bColors.bcolors.OKGREEN + "Train deleted")
+        adminSystem(user)
+
+    elif adminChoice == '3':
+        print(bColors.bcolors.HEADER + "List trains")
+        cs.execute("SELECT trainId, trainName, departureTime, maxPassengerCount FROM traininfo")
+        t = cs.fetchall()
+        print(f"Available trains:")
+        print(bColors.bcolors.OKGREEN + tabulate(t, customFunc.getTableHeaders(cs, "traininfo")[:4]))
+        adminSystem(user)
+
+    elif adminChoice == '4':
+        print(bColors.bcolors.HEADER + "Add admin")
+        adminName = input(bColors.bcolors.OKCYAN + "Enter admin name: ")
+        adminPassword = input(bColors.bcolors.OKCYAN + "Enter admin password: ")
+        os.system('cls')
+        try:
+            cs.execute("INSERT INTO logininfo(username, password, permLevel) VALUES('%s', '%s', 'admin')" %
+                       (adminName, adminPassword))
+        except:
+            print(bColors.bcolors.FAIL + "Error! User already exists")
+        else:
+            db.commit()
+            print(bColors.bcolors.OKGREEN + "Admin added")
+        adminSystem(user)
+
+    elif adminChoice == '5':
+        print(bColors.bcolors.HEADER + "List users")
+        cs.execute("SELECT userId, username, password, permLevel FROM logininfo WHERE permLevel = 'user'")
+        nt = []
+        t = cs.fetchall()
+
+        for i in t:
+            a,b,c = i[0], i[1], i[3]
+            t = (a,b,c)
+            nt.append(t)
+
+        print("Available users:")
+        print(bColors.bcolors.OKGREEN + tabulate(nt, customFunc.getTableHeaders(cs, "logininfo")[:2]))
+        adminSystem(user)
+
+    elif adminChoice == '6':
+        print(bColors.bcolors.HEADER + "Select user")
+        userId = int(input(bColors.bcolors.OKCYAN + "Enter user id: "))
+        os.system('cls')
+        try:
+            cs.execute("SELECT username, password, permLevel FROM logininfo WHERE userId = %s and "
+                       "permLevel = 'user'" % userId)
+        except:
+            print(bColors.bcolors.FAIL + "Error! User does not exist")
+        else:
+            t = cs.fetchall()
+        pretUser = User.User(userId, t[0][0], t[0][1], t[0][2], db)
+        main(pretUser)
+        main(user)
+
+    elif adminChoice == '7':
+        print(bColors.bcolors.OKGREEN + "Goodbye")
+        return
+
+    else:
+        print(bColors.bcolors.FAIL + "Invalid option, input 1,2,3,4,5,6 or 7!")
+        adminSystem(user)
+        return
 
 
 def main(user=False):
@@ -130,8 +246,14 @@ def main(user=False):
         else:
             print(bColors.bcolors.FAIL + "Invalid option, input 1,2 or 3!")
     print(bColors.bcolors.HEADER + "Welcome " + user.username + "!")
-    passenger = customFunc.getPassengerObj(user, db)
-    ticketSystem(user, passenger)
+
+    if(user.permLevel == "user"):
+        passenger = customFunc.getPassengerObj(user, db)
+        ticketSystem(user, passenger)
+    elif(user.permLevel == 'admin'):
+        adminSystem(user)
+    else:
+        return
 
 
 main()
