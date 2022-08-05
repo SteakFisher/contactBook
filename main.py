@@ -259,10 +259,10 @@ def main(user=False):
             print(bColors.bcolors.FAIL + "Invalid option, input 1,2 or 3!")
     print(bColors.bcolors.HEADER + "Welcome " + user.username + "!")
 
-    if(user.permLevel == "user"):
+    if user.permLevel == "user":
         passenger = customFunc.getPassengerObj(user, db)
         ticketSystem(user, passenger)
-    elif(user.permLevel == 'admin'):
+    elif user.permLevel == 'admin':
         adminSystem(user)
     else:
         return
