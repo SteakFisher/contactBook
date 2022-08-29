@@ -27,7 +27,7 @@ Once logged in as admin you can:
 3) List trains - List all the trains in the system
 4) Add admin - Add a new admin to the system
 5) List users - List all the users in the system
-6) Select user - Use the program as though logged in as the specified user, essentially sudo'ing in as that particular chosen user
+6) Select user - Use the program as though logged in as the specified user, essentially sudo'ing in as that particular chosen user [choose the exit option to return to admin view]
 7) Exit - Exit the program
 
 
