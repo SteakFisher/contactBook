@@ -1,7 +1,7 @@
 # Railway Management System
 
 DEFAULT ADMIN USER = "admin" AND PASSWORD = "pass"
-RUN testHelp(num of days, db) at the end of the file to fill the trainInfo table for testing purposes
+RUN autoFillTrainInfo(num of days, db) at the end of the file to fill the trainInfo table for testing purposes
 
 After running the file u can:
 1) Login - Login to an existing account
@@ -29,6 +29,9 @@ Once logged in as admin you can:
 5) List users - List all the users in the system
 6) Select user - Use the program as though logged in as the specified user, essentially sudo'ing in as that particular chosen user [choose the exit option to return to admin view]
 7) Exit - Exit the program
+
+departure place and dest
+payment method
 
 
 -----------------------------------------------------------------------------------------------------------------------
