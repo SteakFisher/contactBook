@@ -3,6 +3,7 @@ import bColors
 from tabulate import tabulate
 import os
 import Passenger
+from credit_card_checker import CreditCardChecker
 
 
 def dateChecks(date):
@@ -54,11 +55,30 @@ def getPassengerObj(user, db):
         print(bColors.bcolors.HEADER + "You have the following passengers:")
         print(bColors.bcolors.OKGREEN + tabulate(passengers,
               getTableHeaders(cs, "customerinfo")[1:]))
+
+        cs.execute("SELECT paymentDue FROM logininfo WHERE userid = %s" % user.userId)
+        dueTotal = cs.fetchall()[0][0]
+        print(f"You have a payment due of {dueTotal}!")
+
         a = int(input(bColors.bcolors.OKCYAN +
-                "Enter the customer id (-1 for new passenger): "))
+                "Enter the customer id (-1 for new passenger, -2 to clear payment dues): "))
         os.system('cls')
         if a == -1:
             passenger = user.addPassenger()
+
+        if a == -2:
+            due = int(input("Enter the amount you'd like to pay: "))
+            ccNum = input("Enter your credit card number: ")
+            if CreditCardChecker(ccNum).valid():
+                pin = input("Enter your CVC code: ")
+                user.clearPayment(due)
+            else:
+                print(bColors.bcolors.FAIL + "Invalid credit card number!")
+                getPassengerObj(user, db)
+
+            user.clearPayment(due)
+            return None
+
         else:
             cs.execute("SELECT * FROM customerInfo WHERE customerid = %s" % a)
             passengerDetails = cs.fetchall()

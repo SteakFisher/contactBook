@@ -14,6 +14,13 @@ class Passenger:
         self.cs.execute("Insert into ticketInfo(customerId, trainId) values(%s, %s)" % (
             self.customerId, trainId))
         self.db.commit()
+
+        self.cs.execute("SELECT travelCost FROM traininfo WHERE trainId = %s" % trainId)
+        cost = self.cs.fetchall()[0][0]
+
+        self.cs.execute("UPDATE logininfo SET paymentDue = paymentDue + %s WHERE userid = %s" % (self.userId, cost))
+        self.db.commit()
+
         print(bColors.bcolors.OKGREEN + "Ticket added")
 
     def deletePassenger(self):
