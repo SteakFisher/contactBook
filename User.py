@@ -42,8 +42,3 @@ class User:
                         self.userId)
         passengers = self.cs.fetchall()
         return passengers
-
-    def clearPayment(self, due):
-        self.cs.execute("UPDATE logininfo SET paymentDue = paymentDue - %s WHERE userid = %s" % (self.userId, due))
-        self.db.commit()
-        print(bColors.bcolors.OKGREEN + "Payment cleared!")

@@ -18,8 +18,8 @@ def autoFillTrainInfo(dayCount, db):
         counter = 1
         for j in range(12):
             cs.execute(
-                "INSERT INTO trainInfo (trainName, departureTime, departingStation, arrivingStation, travelCost, maxPassengerCount) VALUES ('%s', '%s %s', '%s', '%s', %s, %s)" % (
-                    info[counter], NextDayDate, NextDayTime, 'Station 1', 'Station 2', 5, 100))
+                "INSERT INTO trainInfo (trainName, departureTime, maxPassengerCount) VALUES ('%s', '%s %s', %s)" % (
+                    info[counter], NextDayDate, NextDayTime, 5))
             db.commit()
             if counter == 6:
                 counter = 1
