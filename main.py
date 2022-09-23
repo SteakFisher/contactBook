@@ -36,18 +36,19 @@ cs.execute(
     " unique(customerName, customerLastName))")
 
 cs.execute("CREATE TABLE IF NOT EXISTS trainInfo(trainId int PRIMARY KEY NOT NULL AUTO_INCREMENT, trainName " +
-           "varchar(30) NOT NULL, departureTime datetime NOT NULL, maxPassengerCount int NOT NULL)")
+           "varchar(30) NOT NULL, departingStation varchar(30), arrivingStation varchar(30)," +
+           " departureTime datetime NOT NULL, maxPassengerCount int NOT NULL, ticketCost int)")
 
 cs.execute(
     "create table if not exists ticketInfo(customerId int, ticketId int primary key NOT NULL AUTO_INCREMENT," +
-    " trainId int, constraint foreign key "
+    " trainId int, paid bool default false, constraint foreign key "
     "(customerId) references customerInfo(customerId) ON DELETE CASCADE, constraint foreign key (ticketId) " +
     " references trainInfo(trainId) ON DELETE CASCADE)")
 
 
 def ticketSystem(user, passenger):
-    print(bColors.bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Delete account
-5) Delete passenger \n6) Logout \n7) Exit \n(1/2/3/4/5/6)""")
+    print(bColors.bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Ticket Payment 
+5) Delete account \n6) Delete passenger \n7) Logout \n8) Exit \n(1/2/3/4/5/6/7/8)""")
     ticketChoice = input(">>> ")
     os.system('cls')
     if ticketChoice == '1':
@@ -61,7 +62,7 @@ def ticketSystem(user, passenger):
             t = cs.fetchall()
             print(f"Available trains on {dateAlone}:")
             print(bColors.bcolors.OKGREEN + tabulate(t,
-                  customFunc.getTableHeaders(cs, "traininfo")[:3]))
+                                                     customFunc.getTableHeaders(cs, "traininfo")[:3]))
             trainId = input("Enter train id: ")
             passenger.addTicket(trainId)
             os.system('cls')
@@ -79,13 +80,13 @@ def ticketSystem(user, passenger):
         tickets = []
         for i in t:
             cs.execute(
-                "SELECT trainName, departureTime FROM traininfo WHERE trainId = %s" % i[1])
+                "SELECT trainName, departingStation, arrivingStation, departureTime, ticketCost FROM traininfo WHERE trainId = %s" % i[1])
             r = cs.fetchall()
-            tickets.append([i[0], r[0][0], r[0][1]])
+            tickets.append([i[0], r[0][0], r[0][1], r[0][2], r[0][3], r[0][4]])
 
         if len(tickets) != 0:
             print(bColors.bcolors.OKGREEN +
-                  tabulate(tickets, ["Ticket Id", "Train Name", "Departure time"]))
+                  tabulate(tickets, ["Ticket Id", "Train Name", "Departing Station", "Arriving Station", "Departure time", "Ticket cost"]))
         else:
             print(bColors.bcolors.FAIL + "No tickets found")
 
@@ -102,23 +103,35 @@ def ticketSystem(user, passenger):
             print(bColors.bcolors.OKGREEN + "Ticket cancelled")
 
     elif ticketChoice == '4':
+        print(bColors.bcolors.HEADER + "Ticket payment")
+        a = int(input("Enter ticketId of the ticket you'd like to pay for: "))
+        os.system('cls')
+        try:
+            cs.execute("Update ticketInfo set paid = true where ticketId = %s" % a)
+        except:
+            print(bColors.bcolors.FAIL + "Error! Ticket does not exist")
+        else:
+            db.commit()
+            print(bColors.bcolors.OKGREEN + "Ticket paid")
+
+    elif ticketChoice == '5':
         user.deleteUser()
         del passenger
         main()
         return
 
-    elif ticketChoice == '5':
+    elif ticketChoice == '6':
         passenger.deletePassenger()
         del passenger
         main(user)
         return
 
-    elif ticketChoice == '6':
+    elif ticketChoice == '7':
         del passenger
         main()
         return
 
-    elif ticketChoice == '7':
+    elif ticketChoice == '8':
         print(bColors.bcolors.OKGREEN + "Goodbye")
         user.permLevel = 'exit'
         os.system('cls')
@@ -181,7 +194,7 @@ def adminSystem(user):
         t = cs.fetchall()
         print(f"Available trains:")
         print(bColors.bcolors.OKGREEN + tabulate(t,
-              customFunc.getTableHeaders(cs, "traininfo")[:4]))
+                                                 customFunc.getTableHeaders(cs, "traininfo")[:4]))
         adminSystem(user)
 
     elif adminChoice == '4':
@@ -214,7 +227,7 @@ def adminSystem(user):
 
         print("Available users:")
         print(bColors.bcolors.OKGREEN + tabulate(nt,
-              customFunc.getTableHeaders(cs, "logininfo")[:2]))
+                                                 customFunc.getTableHeaders(cs, "logininfo")[:2]))
         adminSystem(user)
 
     elif adminChoice == '6':
@@ -258,6 +271,7 @@ def main(user=False):
         else:
             print(bColors.bcolors.FAIL + "Invalid option, input 1,2 or 3!")
     print(bColors.bcolors.HEADER + "Welcome " + user.username + "!")
+    print(bColors.bcolors.OKCYAN + "You have a due of $" + str(user.due()))
 
     if user.permLevel == "user":
         passenger = customFunc.getPassengerObj(user, db)
@@ -267,6 +281,7 @@ def main(user=False):
     else:
         return
 
+
 main()
 
-# 2023-05-06 23:05:06
+# 2022-09-26 23:05:06

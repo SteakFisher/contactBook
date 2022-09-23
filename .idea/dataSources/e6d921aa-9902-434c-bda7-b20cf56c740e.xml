@@ -3452,7 +3452,7 @@
       <Position>1</Position>
     </column>
     <column id="734" parent="249" name="customerId">
-      <AutoIncrement>2</AutoIncrement>
+      <AutoIncrement>3</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
@@ -3497,7 +3497,7 @@ customerLastName</ColNames>
       <UnderlyingIndexName>customerConstraint</UnderlyingIndexName>
     </key>
     <column id="743" parent="250" name="userId">
-      <AutoIncrement>8</AutoIncrement>
+      <AutoIncrement>13</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -3541,7 +3541,7 @@ customerLastName</ColNames>
       <Position>1</Position>
     </column>
     <column id="752" parent="251" name="ticketId">
-      <AutoIncrement>2</AutoIncrement>
+      <AutoIncrement>4</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
@@ -3550,59 +3550,76 @@ customerLastName</ColNames>
       <DataType>int(11)|0s</DataType>
       <Position>3</Position>
     </column>
-    <foreign-key id="754" parent="251" name="ticketinfo_ibfk_1">
+    <column id="754" parent="251" name="paid">
+      <DataType>tinyint(1)|0s</DataType>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>4</Position>
+    </column>
+    <foreign-key id="755" parent="251" name="ticketinfo_ibfk_1">
       <ColNames>customerId</ColNames>
       <OnDelete>cascade</OnDelete>
       <RefColNames>customerId</RefColNames>
       <RefTableName>customerinfo</RefTableName>
     </foreign-key>
-    <foreign-key id="755" parent="251" name="ticketinfo_ibfk_2">
+    <foreign-key id="756" parent="251" name="ticketinfo_ibfk_2">
       <ColNames>ticketId</ColNames>
       <OnDelete>cascade</OnDelete>
       <RefColNames>trainId</RefColNames>
       <RefTableName>traininfo</RefTableName>
     </foreign-key>
-    <index id="756" parent="251" name="PRIMARY">
+    <index id="757" parent="251" name="PRIMARY">
       <ColNames>ticketId</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="757" parent="251" name="customerId">
+    <index id="758" parent="251" name="customerId">
       <ColNames>customerId</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="758" parent="251" name="PRIMARY">
+    <key id="759" parent="251" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="759" parent="252" name="trainId">
-      <AutoIncrement>38</AutoIncrement>
+    <column id="760" parent="252" name="trainId">
+      <AutoIncrement>37</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="760" parent="252" name="trainName">
+    <column id="761" parent="252" name="trainName">
       <DataType>varchar(30)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="761" parent="252" name="departureTime">
-      <DataType>datetime|0s</DataType>
-      <NotNull>1</NotNull>
+    <column id="762" parent="252" name="departingStation">
+      <DataType>varchar(30)|0s</DataType>
       <Position>3</Position>
     </column>
-    <column id="762" parent="252" name="maxPassengerCount">
-      <DataType>int(11)|0s</DataType>
-      <NotNull>1</NotNull>
+    <column id="763" parent="252" name="arrivingStation">
+      <DataType>varchar(30)|0s</DataType>
       <Position>4</Position>
     </column>
-    <index id="763" parent="252" name="PRIMARY">
+    <column id="764" parent="252" name="departureTime">
+      <DataType>datetime|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="765" parent="252" name="maxPassengerCount">
+      <DataType>int(11)|0s</DataType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="766" parent="252" name="ticketCost">
+      <DataType>int(11)|0s</DataType>
+      <Position>7</Position>
+    </column>
+    <index id="767" parent="252" name="PRIMARY">
       <ColNames>trainId</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="764" parent="252" name="PRIMARY">
+    <key id="768" parent="252" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>

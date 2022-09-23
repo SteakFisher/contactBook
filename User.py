@@ -23,8 +23,9 @@ class User:
         b = input("Enter passenger last name: ")
         os.system('cls')
         try:
-            self.cs.execute("INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (
-                self.userId, a, b))
+            self.cs.execute(
+                "INSERT INTO customerInfo(userid, customerName, customerLastName) VALUES(%s, '%s', '%s')" % (
+                    self.userId, a, b))
         except:
             print(bColors.bcolors.WARNING +
                   "Error! Passenger with the same details already exists!")
@@ -42,3 +43,16 @@ class User:
                         self.userId)
         passengers = self.cs.fetchall()
         return passengers
+
+    def due(self):
+        self.cs.execute(f"SELECT customerId FROM customerInfo WHERE userId = {self.userId}")
+        customers = self.cs.fetchall()
+        cost = 0
+        for customer in customers:
+            self.cs.execute(f"SELECT trainId, paid FROM ticketInfo WHERE customerId = {customer[0]}")
+            tickets = self.cs.fetchall()
+            for ticket in tickets:
+                if ticket[1] == 0:
+                    self.cs.execute(f"SELECT ticketCost FROM traininfo WHERE trainId = {ticket[0]}")
+                    cost += self.cs.fetchall()[0][0]
+        return cost
