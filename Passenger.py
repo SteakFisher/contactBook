@@ -1,6 +1,7 @@
 import bColors
 
 
+
 class Passenger:
     def __init__(self, userId, customerId, customerName, customerLastName, db):
         self.userId = userId

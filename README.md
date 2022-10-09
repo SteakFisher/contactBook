@@ -15,10 +15,11 @@ Each passenger can have multiple tickets, after choosing a passenger you can:
 1) Ticket booking - Book a ticket for the passenger
 2) Ticket checking - Check the status of a ticket
 3) Ticket cancellation - Cancel a ticket
-4) Delete account - Delete the account
-5) Delete passenger - Delete the passenger
-6) Logout - Go back to login screen
-7) Exit - Exit the program
+4) Ticket Payment - Clear the payment due for a ticket
+5) Delete account - Delete the account
+6) Delete passenger - Delete the passenger
+7) Logout - Go back to login screen
+8) Exit - Exit the program
 
 If you are to use login username as "admin" and password as "pass you get logged in as admin
 Once logged in as admin you can:
