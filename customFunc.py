@@ -5,6 +5,7 @@ import os
 import Passenger
 
 
+
 def dateChecks(date):
     date = date.split("-")
     d1 = datetime(int(date[0]), int(date[1]), int(date[2]))
@@ -53,9 +54,9 @@ def getPassengerObj(user, db):
     if len(passengers) != 0:
         print(bColors.bcolors.HEADER + "You have the following passengers:")
         print(bColors.bcolors.OKGREEN + tabulate(passengers,
-              getTableHeaders(cs, "customerinfo")[1:]))
+                                                 getTableHeaders(cs, "customerinfo")[1:]))
         a = int(input(bColors.bcolors.OKCYAN +
-                "Enter the customer id (-1 for new passenger): "))
+                      "Enter the customer id (-1 for new passenger): "))
         os.system('cls')
         if a == -1:
             passenger = user.addPassenger()
@@ -69,3 +70,6 @@ def getPassengerObj(user, db):
         passenger = user.addPassenger()
 
     return passenger
+
+
+

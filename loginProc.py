@@ -1,4 +1,5 @@
 import os
+import maskpass
 import bColors
 import User
 
@@ -6,7 +7,7 @@ import User
 def login(db):
     cs = db.cursor()
     username = input("Enter your username: ")
-    password = input("Enter your password: ")
+    password = maskpass.askpass("Enter your password: ")
     cs.execute(
         "SELECT userId, permLevel FROM loginInfo WHERE username = '%s' AND password = '%s'" % (username, password))
     t = cs.fetchall()
@@ -30,7 +31,7 @@ def signUp(db):
         return False
 
     else:
-        password = input("Enter your password: ")
+        password = maskpass.askpass("Enter your password: ")
         cs.execute("INSERT INTO loginInfo(username, password) VALUES('%s', '%s')" % (
             username, password))
         db.commit()

@@ -6,6 +6,7 @@ import User
 import bColors
 from testHelp import *
 from loginProc import *
+import maskpass
 
 #############################
 # DEFAULT ADMIN USER = "admin" AND PASSWORD = "pass"
@@ -48,7 +49,7 @@ cs.execute(
 
 def ticketSystem(user, passenger):
     print(bColors.bcolors.HEADER + """1) Ticket booking \n2) Ticket checking \n3) Ticket cancellation \n4) Ticket Payment 
-5) Delete account \n6) Delete passenger \n7) Logout \n8) Exit \n(1/2/3/4/5/6/7/8)""")
+5) Switch passenger \n6) Delete account \n7) Delete passenger \n8) Logout \n9) Exit \n(1/2/3/4/5/6/7/8/9)""")
     ticketChoice = input(">>> ")
     os.system('cls')
     if ticketChoice == '1':
@@ -74,7 +75,7 @@ def ticketSystem(user, passenger):
         print(bColors.bcolors.HEADER + "Ticket checking")
         print(bColors.bcolors.OKGREEN + passenger.customerName +
               " has the following tickets: ")
-        cs.execute("SELECT ticketId, trainId FROM ticketInfo WHERE customerid = %s" %
+        cs.execute("SELECT ticketId, trainId, paid FROM ticketInfo WHERE customerid = %s" %
                    passenger.customerId)
         t = cs.fetchall()
         tickets = []
@@ -82,11 +83,14 @@ def ticketSystem(user, passenger):
             cs.execute(
                 "SELECT trainName, departingStation, arrivingStation, departureTime, ticketCost FROM traininfo WHERE trainId = %s" % i[1])
             r = cs.fetchall()
-            tickets.append([i[0], r[0][0], r[0][1], r[0][2], r[0][3], r[0][4]])
+            a = "No"
+            if i[2] == 1:
+                a = "Yes"
+            tickets.append([i[0], r[0][0], r[0][1], r[0][2], r[0][3], r[0][4], a])
 
         if len(tickets) != 0:
             print(bColors.bcolors.OKGREEN +
-                  tabulate(tickets, ["Ticket Id", "Train Name", "Departing Station", "Arriving Station", "Departure time", "Ticket cost"]))
+                  tabulate(tickets, ["Ticket Id", "Train Name", "Departing Station", "Arriving Station", "Departure time", "Ticket cost", "Paid"]))
         else:
             print(bColors.bcolors.FAIL + "No tickets found")
 
@@ -102,6 +106,7 @@ def ticketSystem(user, passenger):
             db.commit()
             print(bColors.bcolors.OKGREEN + "Ticket cancelled")
 
+
     elif ticketChoice == '4':
         print(bColors.bcolors.HEADER + "Ticket payment")
         a = int(input("Enter ticketId of the ticket you'd like to pay for: "))
@@ -115,30 +120,34 @@ def ticketSystem(user, passenger):
             print(bColors.bcolors.OKGREEN + "Ticket paid")
 
     elif ticketChoice == '5':
+        del passenger
+        main(user)
+
+    elif ticketChoice == '6':
         user.deleteUser()
         del passenger
         main()
         return
 
-    elif ticketChoice == '6':
+    elif ticketChoice == '7':
         passenger.deletePassenger()
         del passenger
         main(user)
         return
 
-    elif ticketChoice == '7':
+    elif ticketChoice == '8':
         del passenger
         main()
         return
 
-    elif ticketChoice == '8':
+    elif ticketChoice == '9':
         print(bColors.bcolors.OKGREEN + "Goodbye")
         user.permLevel = 'exit'
         os.system('cls')
         return
 
     else:
-        print(bColors.bcolors.FAIL + "Invalid option, input 1,2,3,4 or 5!")
+        print(bColors.bcolors.FAIL + "Invalid option, input 1,2,3,4,5,6,7,8 or 9!")
         ticketSystem(user, passenger)
         return
 
@@ -271,9 +280,9 @@ def main(user=False):
         else:
             print(bColors.bcolors.FAIL + "Invalid option, input 1,2 or 3!")
     print(bColors.bcolors.HEADER + "Welcome " + user.username + "!")
-    print(bColors.bcolors.OKCYAN + "You have a due of $" + str(user.due()))
 
     if user.permLevel == "user":
+        print(bColors.bcolors.OKCYAN + "You have a due of $" + str(user.due()))
         passenger = customFunc.getPassengerObj(user, db)
         ticketSystem(user, passenger)
     elif user.permLevel == 'admin':
@@ -282,6 +291,13 @@ def main(user=False):
         return
 
 
-main()
+def recurseTry():
+    try:
+        main()
+    except:
+        print(bColors.bcolors.FAIL + "Something went wrong, try again")
+        recurseTry()
+
+recurseTry()
 
 # 2022-09-26 23:05:06

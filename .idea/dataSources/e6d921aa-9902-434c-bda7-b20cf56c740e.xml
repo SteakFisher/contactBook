@@ -3452,7 +3452,7 @@
       <Position>1</Position>
     </column>
     <column id="734" parent="249" name="customerId">
-      <AutoIncrement>3</AutoIncrement>
+      <AutoIncrement>1</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
@@ -3497,7 +3497,7 @@ customerLastName</ColNames>
       <UnderlyingIndexName>customerConstraint</UnderlyingIndexName>
     </key>
     <column id="743" parent="250" name="userId">
-      <AutoIncrement>13</AutoIncrement>
+      <AutoIncrement>4</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -3541,7 +3541,7 @@ customerLastName</ColNames>
       <Position>1</Position>
     </column>
     <column id="752" parent="251" name="ticketId">
-      <AutoIncrement>4</AutoIncrement>
+      <AutoIncrement>1</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>2</Position>
@@ -3582,7 +3582,7 @@ customerLastName</ColNames>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="760" parent="252" name="trainId">
-      <AutoIncrement>37</AutoIncrement>
+      <AutoIncrement>73</AutoIncrement>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
