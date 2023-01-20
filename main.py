@@ -236,7 +236,7 @@ def adminSystem(user):
 
         print("Available users:")
         print(bColors.bcolors.OKGREEN + tabulate(nt,
-                                                 customFunc.getTableHeaders(cs, "logininfo")[:2]))
+                                                 customFunc.getTableHeaders(cs, "logininfo")[:3]))
         adminSystem(user)
 
     elif adminChoice == '6':
